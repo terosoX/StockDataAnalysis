@@ -1,0 +1,47 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import yfinance as yf
+
+def download_stock_data(ticker, period='5y'):
+    try:
+        stock = yf.Ticker(ticker)
+        stock_data = stock.history(period=period)
+        print(f"Successfully downloaded data for {ticker}.")
+        return stock_data
+    except Exception as e:
+        print(f"Error downloading data: {e}")
+        return None
+
+def calculate_moving_averages(df, short_window=5, long_window=10):
+    df['5_day_MA'] = df['Close'].rolling(window=short_window).mean()
+    df['10_day_MA'] = df['Close'].rolling(window=long_window).mean()
+    print("Moving averages calculated.")
+    return df
+
+def plot_stock_data(df, ticker):
+    plt.figure(figsize=(14, 7))
+    plt.plot(df['Close'], label=f'{ticker} Close Price', color='blue', linewidth=2)
+    plt.plot(df['5_day_MA'], label='5 Day Moving Average', color='orange', linestyle='--', linewidth=1.5)
+    plt.plot(df['10_day_MA'], label='10 Day Moving Average', color='green', linestyle='--', linewidth=1.5)
+    plt.title(f'{ticker} Stock Price and Moving Averages', fontsize=16)
+    plt.xlabel('Date', fontsize=14)
+    plt.ylabel('Price (USD)', fontsize=14)
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+    plt.show()
+    print("Stock data plotted.")
+
+def save_to_csv(df, filename):
+    df.to_csv(filename)
+    print(f"Data saved to {filename}.")
+
+if __name__ == "__main__":
+    ticker = "MSFT"
+    period = "5y"
+    stock_data = download_stock_data(ticker, period)
+    
+    if stock_data is not None:
+        stock_data_with_mas = calculate_moving_averages(stock_data)
+        plot_stock_data(stock_data_with_mas, ticker)
+        save_to_csv(stock_data_with_mas, f'{ticker}_stock_data_with_moving_averages.csv')
